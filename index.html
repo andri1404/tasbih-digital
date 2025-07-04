@@ -1,0 +1,973 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasbih Digital - Zikir & Dzikir Islam</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f4c3a 0%, #2d5016 50%, #8b4513 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .islamic-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.02)"/><circle cx="0" cy="0" r="2" fill="rgba(255,255,255,0.02)"/><circle cx="40" cy="0" r="2" fill="rgba(255,255,255,0.02)"/><circle cx="0" cy="40" r="2" fill="rgba(255,255,255,0.02)"/><circle cx="40" cy="40" r="2" fill="rgba(255,255,255,0.02)"/></svg>');
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ffd700, #ffed4a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .header .arabic {
+            font-family: 'Amiri', serif;
+            font-size: 2rem;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .tasbih-container {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 40px;
+            border-radius: 25px;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tasbih-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .current-zikir {
+            position: relative;
+            z-index: 2;
+            margin-bottom: 30px;
+        }
+
+        .current-zikir .arabic-text {
+            font-family: 'Amiri', serif;
+            font-size: 3rem;
+            color: #ffd700;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
+            direction: rtl;
+        }
+
+        .current-zikir .translation {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+
+        .counter-display {
+            position: relative;
+            z-index: 2;
+            margin: 40px 0;
+        }
+
+        .counter-number {
+            font-size: 5rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ffd700, #ffed4a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .counter-label {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        .tasbih-button {
+            position: relative;
+            z-index: 2;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #2d5016, #0f4c3a);
+            border: 4px solid #ffd700;
+            cursor: pointer;
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.3),
+                inset 0 5px 15px rgba(255, 215, 0, 0.1);
+            user-select: none;
+        }
+
+        .tasbih-button:hover {
+            transform: scale(1.05);
+            box-shadow: 
+                0 15px 40px rgba(0, 0, 0, 0.4),
+                inset 0 8px 20px rgba(255, 215, 0, 0.2);
+        }
+
+        .tasbih-button:active {
+            transform: scale(0.95);
+        }
+
+        .tasbih-button-text {
+            font-size: 1.1rem;
+            color: #ffd700;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .reset-button {
+            position: relative;
+            z-index: 2;
+            background: linear-gradient(45deg, #dc3545, #c82333);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 20px 10px;
+        }
+
+        .reset-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3);
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            height: fit-content;
+        }
+
+        .sidebar h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+            text-align: center;
+        }
+
+        .zikir-list {
+            list-style: none;
+        }
+
+        .zikir-item {
+            background: rgba(255, 255, 255, 0.1);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .zikir-item:hover {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: rgba(255, 215, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .zikir-item.active {
+            background: rgba(255, 215, 0, 0.3);
+            border-color: #ffd700;
+        }
+
+        .zikir-arabic {
+            font-family: 'Amiri', serif;
+            font-size: 1.2rem;
+            color: #ffd700;
+            margin-bottom: 5px;
+            text-align: center;
+            direction: rtl;
+        }
+
+        .zikir-translation {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            text-align: center;
+        }
+
+        .progress-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: 30px;
+        }
+
+        .progress-section h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+            text-align: center;
+        }
+
+        .mode-selector {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .mode-selector h4 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .mode-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .mode-button {
+            background: linear-gradient(45deg, #2d5016, #0f4c3a);
+            color: #ffd700;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .mode-button:hover {
+            border-color: #ffd700;
+            transform: translateY(-2px);
+        }
+
+        .mode-button.active {
+            background: linear-gradient(45deg, #ffd700, #ffed4a);
+            color: #0f4c3a;
+            border-color: #ffd700;
+        }
+
+        .custom-target-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin: 10px 5px;
+            text-align: center;
+            width: 80px;
+        }
+
+        .custom-target-input:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+
+        .copyright {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-top: 15px;
+            color: #ffd700;
+        }
+=======
+
+<<<<<<< SEARCH
+                <div class="progress-section">
+                    <h3>Progress Target (33x)</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">0 / 33</div>
+                </div>
+=======
+                <div class="progress-section">
+                    <div class="mode-selector">
+                        <h4>Mode Zikir</h4>
+                        <div class="mode-buttons">
+                            <button class="mode-button active" data-mode="33" id="mode33">33x</button>
+                            <button class="mode-button" data-mode="99" id="mode99">99x</button>
+                            <button class="mode-button" data-mode="100" id="mode100">100x</button>
+                            <button class="mode-button" data-mode="unlimited" id="modeUnlimited">Unlimited</button>
+                            <button class="mode-button" data-mode="custom" id="modeCustom">Custom</button>
+                        </div>
+                        <div id="customTargetDiv" style="display: none; margin-top: 10px;">
+                            <label for="customTarget" style="color: #ffd700;">Target: </label>
+                            <input type="number" id="customTarget" class="custom-target-input" min="1" max="10000" value="33" placeholder="33">
+                        </div>
+                    </div>
+                    
+                    <h3 id="progressTitle">Progress Target (33x)</h3>
+                    <div class="progress-bar" id="progressBarContainer">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">0 / 33</div>
+                </div>
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ffed4a);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: 40px;
+        }
+
+        .footer .verse {
+            font-family: 'Amiri', serif;
+            font-size: 1.5rem;
+            color: #ffd700;
+            margin-bottom: 10px;
+            direction: rtl;
+        }
+
+        .footer .verse-translation {
+            font-style: italic;
+            opacity: 0.9;
+        }
+
+        .islamic-ornament {
+            width: 50px;
+            height: 50px;
+            margin: 20px auto;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 0 C75 25 75 75 50 100 C25 75 25 25 50 0 Z" fill="gold" opacity="0.7"/></svg>') no-repeat center;
+            background-size: contain;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .header .arabic {
+                font-size: 1.5rem;
+            }
+
+            .current-zikir .arabic-text {
+                font-size: 2rem;
+            }
+
+            .counter-number {
+                font-size: 3.5rem;
+            }
+
+            .tasbih-button {
+                width: 150px;
+                height: 150px;
+            }
+
+            .tasbih-container {
+                padding: 20px;
+            }
+
+            .sidebar {
+                padding: 20px;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 215, 0, 0.9);
+            color: #0f4c3a;
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .pulse {
+            animation: pulse 0.3s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="islamic-pattern"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>Tasbih Digital</h1>
+            <div class="arabic">التَّسْبِيحُ الرَّقَمِيُّ</div>
+            <p>Zikir dan Dzikir untuk Mendekatkan Diri kepada Allah SWT</p>
+            <div class="islamic-ornament"></div>
+        </div>
+
+        <div class="main-content">
+            <div class="tasbih-container">
+                <div class="current-zikir">
+                    <div class="arabic-text" id="currentArabic">سُبْحَانَ اللهِ</div>
+                    <div class="translation" id="currentTranslation">Maha Suci Allah (dari segala kekurangan)</div>
+                </div>
+
+                <div class="counter-display">
+                    <div class="counter-number" id="counter">0</div>
+                    <div class="counter-label">Hitungan</div>
+                </div>
+
+                <div class="tasbih-button" id="tasbihButton">
+                    <div class="tasbih-button-text">
+                        TEKAN<br>
+                        للعدّ
+                    </div>
+                </div>
+
+                <div style="text-align: center;">
+                    <button class="reset-button" id="resetButton">Reset Hitungan</button>
+                    <button class="reset-button" id="resetAllButton">Reset Semua</button>
+                </div>
+
+                <div class="progress-section">
+                    <h3>Progress Target (33x)</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">0 / 33</div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <h3>Pilih Zikir</h3>
+                <ul class="zikir-list" id="zikirList">
+                    <li class="zikir-item active" data-index="0">
+                        <div class="zikir-arabic">سُبْحَانَ اللهِ</div>
+                        <div class="zikir-translation">Subhanallah</div>
+                    </li>
+                    <li class="zikir-item" data-index="1">
+                        <div class="zikir-arabic">الْحَمْدُ لِلّهِ</div>
+                        <div class="zikir-translation">Alhamdulillah</div>
+                    </li>
+                    <li class="zikir-item" data-index="2">
+                        <div class="zikir-arabic">اللّهُ أَكْبَر</div>
+                        <div class="zikir-translation">Allahu Akbar</div>
+                    </li>
+                    <li class="zikir-item" data-index="3">
+                        <div class="zikir-arabic">لَا إِلهَ إِلَّا اللهُ</div>
+                        <div class="zikir-translation">La ilaha illa Allah</div>
+                    </li>
+                    <li class="zikir-item" data-index="4">
+                        <div class="zikir-arabic">أَسْتَغْفِرُ اللهَ</div>
+                        <div class="zikir-translation">Astaghfirullah</div>
+                    </li>
+                    <li class="zikir-item" data-index="5">
+                        <div class="zikir-arabic">لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللهِ</div>
+                        <div class="zikir-translation">La hawla wa la quwwata illa billah</div>
+                    </li>
+                    <li class="zikir-item" data-index="6">
+                        <div class="zikir-arabic">سُبْحَانَ اللهِ وَبِحَمْدِهِ</div>
+                        <div class="zikir-translation">Subhanallahi wa bihamdihi</div>
+                    </li>
+                    <li class="zikir-item" data-index="7">
+                        <div class="zikir-arabic">سُبْحَانَ اللهِ الْعَظِيمِ</div>
+                        <div class="zikir-translation">Subhanallahil adzim</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="verse">وَاذْكُرُوا اللهَ كَثِيرًا لَعَلَّكُمْ تُفْلِحُونَ</div>
+            <div class="verse-translation">"Dan berzikirlah (dengan menyebut nama) Allah sebanyak-banyaknya agar kamu beruntung." (QS. Al-Anfal: 45)</div>
+            <div class="islamic-ornament"></div>
+            <div class="copyright">© 2025 by andri14</div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Data zikir
+        const zikirData = [
+            {
+                arabic: "سُبْحَانَ اللهِ",
+                translation: "Maha Suci Allah (dari segala kekurangan)",
+                transliteration: "Subhanallah"
+            },
+            {
+                arabic: "الْحَمْدُ لِلّهِ",
+                translation: "Segala puji bagi Allah",
+                transliteration: "Alhamdulillah"
+            },
+            {
+                arabic: "اللّهُ أَكْبَر",
+                translation: "Allah Maha Besar",
+                transliteration: "Allahu Akbar"
+            },
+            {
+                arabic: "لَا إِلهَ إِلَّا اللهُ",
+                translation: "Tiada Tuhan selain Allah",
+                transliteration: "La ilaha illa Allah"
+            },
+            {
+                arabic: "أَسْتَغْفِرُ اللهَ",
+                translation: "Aku memohon ampun kepada Allah",
+                transliteration: "Astaghfirullah"
+            },
+            {
+                arabic: "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللهِ",
+                translation: "Tiada daya dan kekuatan kecuali dari Allah",
+                transliteration: "La hawla wa la quwwata illa billah"
+            },
+            {
+                arabic: "سُبْحَانَ اللهِ وَبِحَمْدِهِ",
+                translation: "Maha Suci Allah dan dengan memuji-Nya",
+                transliteration: "Subhanallahi wa bihamdihi"
+            },
+            {
+                arabic: "سُبْحَانَ اللهِ الْعَظِيمِ",
+                translation: "Maha Suci Allah Yang Maha Agung",
+                transliteration: "Subhanallahil adzim"
+            }
+        ];
+
+        // State aplikasi
+        let currentZikirIndex = 0;
+        let counters = new Array(zikirData.length).fill(0);
+        let totalCount = 0;
+        let currentMode = 33;
+        let isUnlimitedMode = false;
+
+        // DOM elements
+        const currentArabic = document.getElementById('currentArabic');
+        const currentTranslation = document.getElementById('currentTranslation');
+        const counter = document.getElementById('counter');
+        const tasbihButton = document.getElementById('tasbihButton');
+        const resetButton = document.getElementById('resetButton');
+        const resetAllButton = document.getElementById('resetAllButton');
+        const zikirList = document.getElementById('zikirList');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const notification = document.getElementById('notification');
+
+        // Event listeners
+        tasbihButton.addEventListener('click', incrementCounter);
+        resetButton.addEventListener('click', resetCurrentCounter);
+        resetAllButton.addEventListener('click', resetAllCounters);
+
+        // Event listeners untuk item zikir
+        zikirList.addEventListener('click', (e) => {
+            const zikirItem = e.target.closest('.zikir-item');
+            if (zikirItem) {
+                const index = parseInt(zikirItem.dataset.index);
+                changeZikir(index);
+            }
+        });
+
+        // Event listeners untuk mode buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('mode-button')) {
+                const mode = e.target.dataset.mode;
+                changeMode(mode);
+                
+                // Update active button
+                document.querySelectorAll('.mode-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                e.target.classList.add('active');
+            }
+        });
+
+        // Event listener untuk custom target input
+        customTargetInput.addEventListener('change', (e) => {
+            const value = parseInt(e.target.value);
+            if (value && value > 0) {
+                currentMode = value;
+                updateProgress();
+                updateProgressTitle();
+            }
+        });
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                incrementCounter();
+            } else if (e.code === 'KeyR') {
+                resetCurrentCounter();
+            }
+        });
+
+        function incrementCounter() {
+            counters[currentZikirIndex]++;
+            totalCount++;
+            updateDisplay();
+            updateProgress();
+            playClickSound();
+            addPulseEffect();
+            
+            // Notifikasi untuk milestone
+            checkMilestones();
+
+            // Simpan ke localStorage
+            saveToLocalStorage();
+        }
+
+        function resetCurrentCounter() {
+            if (confirm('Apakah Anda yakin ingin mereset hitungan ' + zikirData[currentZikirIndex].transliteration + '?')) {
+                counters[currentZikirIndex] = 0;
+                updateDisplay();
+                updateProgress();
+                showNotification('Counter untuk ' + zikirData[currentZikirIndex].transliteration + ' telah direset');
+                saveToLocalStorage();
+            }
+        }
+
+        function resetAllCounters() {
+            if (confirm('Apakah Anda yakin ingin mereset semua hitungan?')) {
+                counters = new Array(zikirData.length).fill(0);
+                totalCount = 0;
+                updateDisplay();
+                updateProgress();
+                showNotification('Semua counter telah direset');
+                saveToLocalStorage();
+            }
+        }
+
+        function changeZikir(index) {
+            currentZikirIndex = index;
+            updateZikirDisplay();
+            updateDisplay();
+            updateProgress();
+            updateActiveZikir();
+            saveToLocalStorage();
+        }
+
+        function updateZikirDisplay() {
+            const zikir = zikirData[currentZikirIndex];
+            currentArabic.textContent = zikir.arabic;
+            currentTranslation.textContent = zikir.translation;
+        }
+
+        function updateDisplay() {
+            counter.textContent = counters[currentZikirIndex];
+        }
+
+        function updateProgress() {
+            const current = counters[currentZikirIndex];
+            
+            if (isUnlimitedMode) {
+                progressBarContainer.style.display = 'none';
+                progressText.textContent = `${current} (Mode Unlimited)`;
+            } else {
+                progressBarContainer.style.display = 'block';
+                const target = currentMode;
+                const percentage = Math.min((current / target) * 100, 100);
+                
+                progressFill.style.width = percentage + '%';
+                progressText.textContent = `${current} / ${target}`;
+            }
+        }
+
+        function changeMode(mode) {
+            if (mode === 'unlimited') {
+                isUnlimitedMode = true;
+                currentMode = 0;
+                customTargetDiv.style.display = 'none';
+            } else if (mode === 'custom') {
+                isUnlimitedMode = false;
+                customTargetDiv.style.display = 'block';
+                currentMode = parseInt(customTargetInput.value) || 33;
+            } else {
+                isUnlimitedMode = false;
+                currentMode = parseInt(mode);
+                customTargetDiv.style.display = 'none';
+            }
+            
+            updateProgress();
+            updateProgressTitle();
+            saveToLocalStorage();
+        }
+
+        function updateProgressTitle() {
+            if (isUnlimitedMode) {
+                progressTitle.textContent = 'Mode Unlimited';
+            } else {
+                progressTitle.textContent = `Progress Target (${currentMode}x)`;
+            }
+        }
+
+        function checkMilestones() {
+            const count = counters[currentZikirIndex];
+            const zikir = zikirData[currentZikirIndex].transliteration;
+            
+            // Milestone notifications
+            if (count === 33) {
+                showNotification(`MashaAllah! Anda telah menyelesaikan 33x ${zikir}`);
+            } else if (count === 99) {
+                showNotification(`SubhanAllah! Anda telah menyelesaikan 99x ${zikir}`);
+            } else if (count === 100) {
+                showNotification(`Alhamdulillah! Anda telah menyelesaikan 100x ${zikir}`);
+            } else if (count === 500) {
+                showNotification(`MashaAllah! Anda telah mencapai 500x ${zikir}!`);
+            } else if (count === 1000) {
+                showNotification(`SubhanAllah! Anda telah mencapai 1000x ${zikir}!`);
+            } else if (!isUnlimitedMode && count === currentMode && currentMode > 100) {
+                showNotification(`Alhamdulillah! Target ${currentMode}x ${zikir} tercapai!`);
+            }
+        }
+
+        function updateActiveZikir() {
+            const items = document.querySelectorAll('.zikir-item');
+            items.forEach((item, index) => {
+                if (index === currentZikirIndex) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        function playClickSound() {
+            // Simulasi suara klik dengan Audio API
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } catch (e) {
+                // Browser tidak mendukung Web Audio API
+            }
+        }
+
+        function addPulseEffect() {
+            tasbihButton.classList.add('pulse');
+            setTimeout(() => {
+                tasbihButton.classList.remove('pulse');
+            }, 300);
+        }
+
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function saveToLocalStorage() {
+            const data = {
+                currentZikirIndex,
+                counters,
+                totalCount,
+                currentMode,
+                isUnlimitedMode
+            };
+            localStorage.setItem('tasbihData', JSON.stringify(data));
+        }
+
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem('tasbihData');
+            if (savedData) {
+                try {
+                    const data = JSON.parse(savedData);
+                    currentZikirIndex = data.currentZikirIndex || 0;
+                    counters = data.counters || new Array(zikirData.length).fill(0);
+                    totalCount = data.totalCount || 0;
+                } catch (e) {
+                    // Data rusak, gunakan default
+                }
+            }
+        }
+
+        // Inisialisasi aplikasi
+        function init() {
+            loadFromLocalStorage();
+            updateZikirDisplay();
+            updateDisplay();
+            updateProgress();
+            updateProgressTitle();
+            updateActiveZikir();
+            initializeModeButtons();
+            
+            // Tampilkan pesan selamat datang
+            setTimeout(() => {
+                showNotification('Selamat datang! Mulailah berzikir untuk mendekatkan diri kepada Allah SWT');
+            }, 1000);
+        }
+
+        function initializeModeButtons() {
+            // Set active mode button based on current mode
+            document.querySelectorAll('.mode-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            if (isUnlimitedMode) {
+                document.getElementById('modeUnlimited').classList.add('active');
+                customTargetDiv.style.display = 'none';
+            } else if (currentMode === 33) {
+                document.getElementById('mode33').classList.add('active');
+            } else if (currentMode === 99) {
+                document.getElementById('mode99').classList.add('active');
+            } else if (currentMode === 100) {
+                document.getElementById('mode100').classList.add('active');
+            } else {
+                document.getElementById('modeCustom').classList.add('active');
+                customTargetDiv.style.display = 'block';
+                customTargetInput.value = currentMode;
+            }
+        }
+
+        // Jalankan inisialisasi
+        init();
+
+        // Touch support untuk mobile
+        let touchStartTime = 0;
+        tasbihButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            touchStartTime = Date.now();
+        });
+
+        tasbihButton.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            const touchDuration = Date.now() - touchStartTime;
+            if (touchDuration < 500) { // Tap singkat
+                incrementCounter();
+            }
+        });
+
+        // Prevent context menu on tasbih button
+        tasbihButton.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
+        // Update waktu setiap detik untuk menunjukkan aplikasi aktif
+        setInterval(() => {
+            const now = new Date();
+            const hours = now.getHours();
+            
+            // Reminder untuk zikir di waktu-waktu tertentu
+            if ((hours === 6 || hours === 12 || hours === 18) && now.getMinutes() === 0 && now.getSeconds() === 0) {
+                showNotification('Waktu yang baik untuk berzikir! Mari perbanyak dzikir kepada Allah SWT');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
+
